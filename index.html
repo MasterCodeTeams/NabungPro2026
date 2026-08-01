@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NabungPro 2026 - Ultimate</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        
+        body { 
+            background-color: var(--bg-color); color: var(--text-main); 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; padding: 20px; 
+        }
+        
+        .container { 
+            background-color: var(--card-bg); width: 100%; max-width: 450px; 
+            padding: 30px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
+        }
+        
+        h1 { text-align: center; margin-bottom: 25px; font-size: 26px; }
+        
+        .balance-card { 
+            background: linear-gradient(135deg, var(--primary), #8b5cf6); 
+            padding: 25px; border-radius: 20px; text-align: center; 
+            margin-bottom: 20px; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .balance-card h2 { font-size: 16px; font-weight: 500; opacity: 0.9; text-transform: uppercase; }
+        .balance-card .amount { font-size: 38px; font-weight: 800; margin: 10px 0; word-break: break-all; }
+        
+        .target-container { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .target-text { font-size: 14px; opacity: 0.9; }
+        .edit-target-btn { background: none; border: none; color: white; cursor: pointer; text-decoration: underline; font-size: 12px; opacity: 0.8; }
+        
+        .progress-container { background-color: rgba(255,255,255,0.2); height: 8px; border-radius: 10px; margin-top: 10px; overflow: hidden; }
+        .progress-bar { background-color: var(--accent-green); height: 100%; width: 0%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .input-group input { 
+            flex: 1; padding: 15px; border: 2px solid transparent; 
+            border-radius: 14px; background-color: #334155; color: white; 
+            font-size: 16px; outline: none; transition: 0.3s;
+        }
+        .input-group input:focus { border-color: var(--primary); }
+        
+        .action-group { display: flex; gap: 10px; margin-bottom: 30px; }
+        .action-group button { 
+            flex: 1; padding: 15px; border: none; border-radius: 14px; 
+            color: white; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; 
+        }
+        .btn-save { background-color: var(--accent-green); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+        .btn-save:hover { background-color: #059669; transform: translateY(-2px); }
+        .btn-withdraw { background-color: var(--accent-red); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
+        .btn-withdraw:hover { background-color: #dc2626; transform: translateY(-2px); }
+        
+        .history { margin-top: 10px; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .history-header h3 { font-size: 16px; color: var(--text-muted); text-transform: uppercase; }
+        .btn-reset { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+        .btn-reset:hover { border-color: var(--accent-red); color: var(--accent-red); }
+
+        .history-list { list-style: none; max-height: 250px; overflow-y: auto; }
+        .history-list::-webkit-scrollbar { width: 6px; }
+        .history-list::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        
+        .history-list li { 
+            background-color: #334155; padding: 15px; border-radius: 12px; 
+            margin-bottom: 10px; display: flex; justify-content: space-between; 
+            align-items: center; font-size: 15px; animation: slideIn 0.3s ease forwards;
+        }
+        
+        .text-green { color: var(--accent-green); font-weight: bold; font-size: 16px;}
+        .text-red { color: var(--accent-red); font-weight: bold; font-size: 16px;}
+        .date { color: var(--text-muted); font-size: 12px; display: block; margin-top: 4px; }
+
+        /* Modal Target */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 10; }
+        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 16px; width: 90%; max-width: 350px; text-align: center; }
+        .modal input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 10px; border: none; background: #334155; color: white; font-size: 16px; }
+        .modal button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- Modal Set Target -->
+    <div class="modal" id="targetModal">
+        <div class="modal-content">
+            <h3>Atur Target Tabungan</h3>
+            <input type="number" id="newTargetInput" placeholder="Contoh: 5000000">
+            <button onclick="simpanTarget()">Simpan Target</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>NabungPro 2026 🚀</h1>
+        
+        <div class="balance-card">
+            <h2>Total Saldo</h2>
+            <div class="amount" id="totalBalance">Rp 0</div>
+            
+            <div class="target-container">
+                <span class="target-text" id="targetText">Target: Rp 0</span>
+                <button class="edit-target-btn" onclick="bukaModalTarget()">Ubah</button>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <input type="number" id="nominalInput" placeholder="Masukkan Nominal (cth: 50000)">
+        </div>
+        
+        <div class="action-group">
+            <button class="btn-save" onclick="transaksi('tambah')">Simpan (+)</button>
+            <button class="btn-withdraw" onclick="transaksi('kurang')">Tarik (-)</button>
+        </div>
+
+        <div class="history">
+            <div class="history-header">
+                <h3>Riwayat</h3>
+                <button class="btn-reset" onclick="resetData()">Reset Data</button>
+            </div>
+            <ul class="history-list" id="historyList">
+                <!-- Data riwayat dari Local Storage akan dirender di sini -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Inisialisasi Data dari Local Storage (atau data default)
+        let appData = JSON.parse(localStorage.getItem('nabungData')) || {
+            saldo: 0,
+            target: 10000000,
+            riwayat: []
+        };
+
+        // Fungsi Format Rupiah
+        const formatRupiah = (angka) => {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        };
+
+        // Fungsi Update Tampilan (UI)
+        function updateUI() {
+            // Update Saldo & Target
+            document.getElementById('totalBalance').innerText = formatRupiah(appData.saldo);
+            document.getElementById('targetText').innerText = `Target: ${formatRupiah(appData.target)}`;
+
+            // Update Progress Bar
+            let persentase = (appData.saldo / appData.target) * 100;
+            if (persentase > 100) persentase = 100;
+            if (persentase < 0) persentase = 0;
+            document.getElementById('progressBar').style.width = persentase + '%';
+
+            // Render Riwayat
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            appData.riwayat.forEach(item => {
+                const li = document.createElement('li');
+                const isTambah = item.jenis === 'tambah';
+                
+                li.innerHTML = `
+                    <div>
+                        <strong>${isTambah ? 'Nabung' : 'Tarik Saldo'}</strong>
+                        <span class="date">${item.tanggal}</span>
+                    </div>
+                    <span class="${isTambah ? 'text-green' : 'text-red'}">
+                        ${isTambah ? '+' : '-'} ${formatRupiah(item.nominal)}
+                    </span>
+                `;
+                historyList.appendChild(li);
+            });
+        }
+
+        // Fungsi Simpan ke Local Storage
+        function simpanKeLocalStorage() {
+            localStorage.setItem('nabungData', JSON.stringify(appData));
+            updateUI();
+        }
+
+        // Fungsi Utama Transaksi (Nabung / Tarik)
+        function transaksi(jenis) {
+            const input = document.getElementById('nominalInput');
+            const nominal = parseInt(input.value);
+
+            if (isNaN(nominal) || nominal <= 0) {
+                alert("Masukkan nominal angka yang valid! 😅");
+                return;
+            }
+
+            if (jenis === 'kurang' && nominal > appData.saldo) {
+                alert("Waduh, saldo kamu nggak cukup buat ditarik! 😭");
+                return;
+            }
+
+            // Update Saldo
+            if (jenis === 'tambah') {
+                appData.saldo += nominal;
+            } else {
+                appData.saldo -= nominal;
+            }
+
+            // Buat Catatan Tanggal
+            const tanggal = new Date().toLocaleDateString('id-ID', { 
+                day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+            });
+
+            // Tambah ke Riwayat (Paling Atas)
+            appData.riwayat.unshift({
+                jenis: jenis,
+                nominal: nominal,
+                tanggal: tanggal
+            });
+
+            simpanKeLocalStorage();
+            input.value = ''; // Kosongkan input
+        }
+
+        // Fungsi Modal Target
+        function bukaModalTarget() {
+            document.getElementById('targetModal').style.display = 'flex';
+            document.getElementById('newTargetInput').value = appData.target;
+        }
+
+        function simpanTarget() {
+            const newTarget = parseInt(document.getElementById('newTargetInput').value);
+            if (isNaN(newTarget) || newTarget <= 0) {
+                alert("Target harus berupa angka yang valid!");
+                return;
+            }
+            appData.target = newTarget;
+            document.getElementById('targetModal').style.display = 'none';
+            simpanKeLocalStorage();
+        }
+
+        // Fungsi Reset Data
+        function resetData() {
+            if(confirm("Yakin mau hapus semua data tabungan ini? Data bakal hilang permanen lho! 😱")) {
+                appData = { saldo: 0, target: 10000000, riwayat: [] };
+                simpanKeLocalStorage();
+            }
+        }
+
+        // Render pertama kali saat web dibuka
+        updateUI();
+    </script>
+</body>
+</html>
